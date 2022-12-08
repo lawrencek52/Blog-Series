@@ -69,11 +69,11 @@ pv_status_t pv_board_init(void) {
         return PV_STATUS_INVALID_STATE;
     }
 
-    result = cy_rgb_led_init(CYBSP_LED_RGB_RED, CYBSP_LED_RGB_GREEN, CYBSP_LED_RGB_BLUE, CY_RGB_LED_ACTIVE_LOW);
+/*    result = cy_rgb_led_init(CYBSP_LED_RGB_RED, CYBSP_LED_RGB_GREEN, CYBSP_LED_RGB_BLUE, CY_RGB_LED_ACTIVE_LOW);
     if (result != CY_RSLT_SUCCESS) {
         return PV_STATUS_INVALID_STATE;
     }
-
+*/
     __enable_irq();
 
     uint64_t board_uuid = Cy_SysLib_GetUniqueId();

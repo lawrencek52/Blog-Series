@@ -37,12 +37,12 @@
 <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.gdbServerTelnetPortNumber" value="2333"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.interfaceSpeed" value="auto"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.otherInitCommands" value=""/>
-<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.otherRunCommands" value="monitor reset 2&#13;&#10;monitor flash erase&#13;&#10;monitor reset 0&#13;&#10;quit"/>
+<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.otherRunCommands" value="monitor reset 0&#13;&#10;monitor flash erase&#13;&#10;monitor reset 0&#13;&#10;quit"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.secondResetType" value="2"/>
 <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.swoEnableTargetCpuFreq" value="0"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.swoEnableTargetPortMask" value="0x1"/>
 <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.swoEnableTargetSwoFreq" value="0"/>
-<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.svdPath" value=""/>
+<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.svdPath" value="${cy_prj_path}/../mtb_shared/mtb-pdl-cat1/release-v2.4.1/devices/COMPONENT_CAT1A/svd/psoc6_02.svd"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageFileName" value=""/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageOffset" value=""/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.ipAddress" value="localhost"/>
@@ -66,7 +66,7 @@
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${cy_prj_path}/build/CY8CKIT-062S2-43012/Debug/picovoice-demo-psoc6.hex"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${cy_prj_path}/build/CY8CPROTO-062-4343W/Debug/picovoice-demo-psoc6.hex"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="picovoice-demo-psoc6"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
