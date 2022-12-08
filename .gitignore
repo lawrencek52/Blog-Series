@@ -1,3 +1,5 @@
 /.metadata/
 **/access_key.h
 *.log
+picovoice-demo-psoc6/.mtbqueryapi
+picovoice-demo-psoc6/.settings/modustoolbox.prefs

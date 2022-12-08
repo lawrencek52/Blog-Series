@@ -23,7 +23,8 @@
 
 #define MEMORY_BUFFER_SIZE (70 * 1024)
 
-static const char* ACCESS_KEY = ... // AccessKey string obtained from Picovoice Console (https://picovoice.ai/console/)
+//static const char* ACCESS_KEY = ... // AccessKey string obtained from Picovoice Console (https://picovoice.ai/console/)
+#include "access_key.h"
 
 static int8_t memory_buffer[MEMORY_BUFFER_SIZE] __attribute__((aligned(16)));
 
