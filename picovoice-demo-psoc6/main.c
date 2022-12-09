@@ -12,9 +12,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 //#include "cy_rgb_led.h"
 #include "cybsp.h"
+#include "cyhal.h"
 
 #include "pv_audio_rec.h"
 #include "pv_keywords.h"
@@ -32,6 +35,8 @@ static const float PORCUPINE_SENSITIVITY = 0.75f;
 static const float RHINO_SENSITIVITY = 0.5f;
 static const float RHINO_ENDPOINT_DURATION_SEC = 1.0f;
 static const bool RHINO_REQUIRE_ENDPOINT = true;
+TaskHandle_t picovoiceTaskHandle = NULL;
+
 
 static void wake_word_callback(void) {
     printf("[wake word]\r\n");
@@ -55,7 +60,7 @@ static void inference_callback(pv_inference_t *inference) {
     }
     printf("}\r\n\n");
 
- /*   for (int32_t i = 0; i < 10; i++) {
+/*  for (int32_t i = 0; i < 10; i++) {
         if (cy_rgb_led_get_brightness() == 0) {
             cy_rgb_led_set_brightness(CY_RGB_LED_MAX_BRIGHTNESS);
         } else {
@@ -63,8 +68,8 @@ static void inference_callback(pv_inference_t *inference) {
         }
         Cy_SysLib_Delay(30);
     }
-    cy_rgb_led_off();
-*/
+    cy_rgb_led_off(); */
+
     pv_inference_delete(inference);
 }
 
@@ -72,8 +77,54 @@ static void error_handler(void) {
     while(true);
 }
 
+
+pv_picovoice_t *picovoice_handle = NULL;
+void picovoice_task(void * pvParameters)
+{
+pv_status_t status;
+
+
+
+status = pv_picovoice_init(
+	            ACCESS_KEY,
+	            MEMORY_BUFFER_SIZE,
+	            memory_buffer,
+	            sizeof(KEYWORD_ARRAY),
+	            KEYWORD_ARRAY,
+	            PORCUPINE_SENSITIVITY,
+	            wake_word_callback,
+	            sizeof(CONTEXT_ARRAY),
+	            CONTEXT_ARRAY,
+	            RHINO_SENSITIVITY,
+	            RHINO_ENDPOINT_DURATION_SEC,
+	            RHINO_REQUIRE_ENDPOINT,
+	            inference_callback,
+	            &picovoice_handle);
+	    if (status != PV_STATUS_SUCCESS) {
+	        printf("Picovoice init failed with '%s'\r\n", pv_status_to_string(status));
+	        error_handler();
+	    }
+
+		while (true) {
+	    	vTaskSuspend(NULL); // suspend ourself, will be resumed by ISR
+	        const int16_t *buffer = pv_audio_rec_get_new_buffer();
+	        if (buffer) {
+	            const pv_status_t status = pv_picovoice_process(picovoice_handle, buffer);
+	            if (status != PV_STATUS_SUCCESS) {
+	                printf("Picovoice process failed with '%s'\r\n", pv_status_to_string(status));
+	                error_handler();
+	            }
+	        } else {
+	        	printf("Empty Buffer\r\n");
+	        }
+	    }
+}
+
 int main(void) {
-    pv_status_t status = pv_board_init();
+    cy_rslt_t result;
+    pv_status_t status;
+
+    status = pv_board_init();
     if (status != PV_STATUS_SUCCESS) {
         error_handler();
     }
@@ -90,6 +141,16 @@ int main(void) {
     }
     printf("\r\n");
 
+    /* Initialize the User LED */
+    result = cyhal_gpio_init(CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT,
+                             CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+
+    /* GPIO init failed. Stop program execution */
+    if (result != CY_RSLT_SUCCESS)
+    {
+        CY_ASSERT(0);
+    }
+
     status = pv_audio_rec_init();
     if (status != PV_STATUS_SUCCESS) {
         printf("Audio init failed with '%s'\r\n", pv_status_to_string(status));
@@ -102,40 +163,29 @@ int main(void) {
         error_handler();
     }
 
-    pv_picovoice_t *handle = NULL;
 
-    status = pv_picovoice_init(
-            ACCESS_KEY,
-            MEMORY_BUFFER_SIZE,
-            memory_buffer,
-            sizeof(KEYWORD_ARRAY),
-            KEYWORD_ARRAY,
-            PORCUPINE_SENSITIVITY,
-            wake_word_callback,
-            sizeof(CONTEXT_ARRAY),
-            CONTEXT_ARRAY,
-            RHINO_SENSITIVITY,
-            RHINO_ENDPOINT_DURATION_SEC,
-            RHINO_REQUIRE_ENDPOINT,
-            inference_callback,
-            &handle);
-    if (status != PV_STATUS_SUCCESS) {
-        printf("Picovoice init failed with '%s'\r\n", pv_status_to_string(status));
-        error_handler();
-    }
+    BaseType_t xReturned;
 
-    while (true) {
-        const int16_t *buffer = pv_audio_rec_get_new_buffer();
-        if (buffer) {
-            const pv_status_t status = pv_picovoice_process(handle, buffer);
-            if (status != PV_STATUS_SUCCESS) {
-                printf("Picovoice process failed with '%s'\r\n", pv_status_to_string(status));
-                error_handler();
-            }
-        }
+#define STACK_SIZE	8000
+        /* Create the task, storing the handle. */
+        xReturned = xTaskCreate(
+                        picovoice_task,       /* Function that implements the task. */
+                        "Picovoice",          /* Text name for the task. */
+                        STACK_SIZE,      /* Stack size in words, not bytes. */
+                        ( void * ) 1,    /* Parameter passed into the task. */
+						configMAX_PRIORITIES/2,/* Priority at which the task is created. */
+                        &picovoiceTaskHandle );      /* Used to pass out the created task's handle. */
 
-    }
+        // Start the real time scheduler.
+        vTaskStartScheduler();
+
+        // we should NEVER get to here....
+        if( xReturned == pdPASS ) {
+             /* The task was created.  Use the task's handle to delete the task. */
+             vTaskDelete( picovoiceTaskHandle );
+         }
+
     pv_board_deinit();
     pv_audio_rec_deinit();
-    pv_picovoice_delete(handle);
+    pv_picovoice_delete(picovoice_handle);
 }

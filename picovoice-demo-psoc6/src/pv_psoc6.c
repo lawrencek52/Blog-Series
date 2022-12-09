@@ -13,7 +13,7 @@
 
 #include "cy_pdl.h"
 #include "cy_retarget_io.h"
-#include "cy_rgb_led.h"
+//#include "cy_rgb_led.h"
 #include "cybsp.h"
 #include "cyhal.h"
 
@@ -27,6 +27,7 @@ cyhal_clock_t   cpu_clock;
 
 static cy_rslt_t cpu_clock_init(void) {
     cy_rslt_t result;
+
 //    result = cyhal_clock_get(&pll_cpu_clock, &CYHAL_CLOCK_PLL[0]);
     result = cyhal_clock_reserve(&pll_cpu_clock, &CYHAL_CLOCK_PLL[0]);
 
@@ -42,9 +43,10 @@ static cy_rslt_t cpu_clock_init(void) {
         result = cyhal_clock_set_enabled(&pll_cpu_clock, true, true);
     }
 
+
     if (result == CY_RSLT_SUCCESS) {
  //        result = cyhal_clock_get(&cpu_clock, &CYHAL_CLOCK_HF[0]);
-	       result = cyhal_clock_reserve(&cpu_clock, &CYHAL_CLOCK_HF[0]);
+              result = cyhal_clock_reserve(&cpu_clock, &CYHAL_CLOCK_HF[0]);
     }
 
     if (result == CY_RSLT_SUCCESS) {

@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <FreeRTOS.h>
+#include <task.h>
+
 #include "cybsp.h"
 #include "cyhal.h"
 
@@ -31,6 +34,8 @@
 #define PDM_CLK                         (P10_4)
 
 void pdm_pcm_isr_handler(void *arg, cyhal_pdm_pcm_event_t event);
+extern TaskHandle_t picovoiceTaskHandle;
+
 
 cyhal_pdm_pcm_t pdm_pcm;
 cyhal_clock_t   audio_clock;
@@ -59,12 +64,13 @@ struct {
 } pv_audio_rec;
 
 cy_rslt_t pdm_pcm_clock_init(void) {
+
     cy_rslt_t result;
 //    result = cyhal_clock_get(&pll_clock, &CYHAL_CLOCK_PLL[1]);
     result = cyhal_clock_reserve(&pll_clock, &CYHAL_CLOCK_PLL[1]);
 
     if (result == CY_RSLT_SUCCESS) {
- //    result = cyhal_clock_get(&pll_clock, &CYHAL_CLOCK_PLL[1]);
+ //    result = cyhal_clock_init(&pll_clock);
     }
 
     if (result == CY_RSLT_SUCCESS) {
@@ -75,10 +81,10 @@ cy_rslt_t pdm_pcm_clock_init(void) {
         result = cyhal_clock_set_enabled(&pll_clock, true, true);
     }
 
+
     if (result == CY_RSLT_SUCCESS) {
 //      result = cyhal_clock_get(&audio_clock, &CYHAL_CLOCK_HF[1]);
         result = cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
-
     }
 
     if (result == CY_RSLT_SUCCESS) {
@@ -98,6 +104,7 @@ cy_rslt_t pdm_pcm_clock_init(void) {
 
 pv_status_t pv_audio_rec_init(void) {
     cy_rslt_t result;
+
     result = pdm_pcm_clock_init();
     if (result != CY_RSLT_SUCCESS) {
         return PV_STATUS_INVALID_STATE;
@@ -108,8 +115,9 @@ pv_status_t pv_audio_rec_init(void) {
         return PV_STATUS_INVALID_STATE;
     }
 
-    cyhal_pdm_pcm_register_callback(&pdm_pcm, pdm_pcm_isr_handler, NULL);
+    cyhal_pdm_pcm_register_callback(&pdm_pcm, pdm_pcm_isr_handler, &pdm_pcm);
     cyhal_pdm_pcm_enable_event(&pdm_pcm, CYHAL_PDM_PCM_ASYNC_COMPLETE, CYHAL_ISR_PRIORITY_DEFAULT, true);
+
 
     pv_audio_rec.channel_number = PV_AUDIO_REC_CHANNEL_NUMBER;
     pv_audio_rec.audio_frequency = PV_AUDIO_REC_AUDIO_FREQUENCY;
@@ -120,7 +128,6 @@ pv_status_t pv_audio_rec_init(void) {
 
 pv_status_t pv_audio_rec_start(void) {
     cyhal_pdm_pcm_start(&pdm_pcm);
-
     cyhal_pdm_pcm_read_async(&pdm_pcm, &ping_pong_buffer[write_index][0], PV_AUDIO_REC_RECORD_BUFFER_SIZE);
 
     pv_audio_rec.is_recording = true;
@@ -132,7 +139,7 @@ pv_status_t pv_audio_rec_stop(void) {
     pv_audio_rec.is_recording = false;
     return PV_STATUS_SUCCESS;
 }
-
+/*
 float pv_audio_rec_loudness_db(void) {
     if (read_index == -1) {
         return -FLT_MAX;
@@ -149,7 +156,7 @@ float pv_audio_rec_loudness_db(void) {
         return -FLT_MAX;
     }
 }
-
+*/
 const int16_t *pv_audio_rec_get_new_buffer(void) {
     if (read_index == -1) {
         return NULL;
@@ -171,6 +178,8 @@ void pdm_pcm_isr_handler(void *arg, cyhal_pdm_pcm_event_t event) {
     cyhal_pdm_pcm_read_async(&pdm_pcm, &ping_pong_buffer[write_index][0], PV_AUDIO_REC_RECORD_BUFFER_SIZE);
     read_index = write_index;
     write_index = (write_index == 1) ? 0 : 1;
+		// process the data in the full buffer
+		xTaskResumeFromISR( picovoiceTaskHandle );
 }
 
 void pv_audio_rec_deinit(void) {
