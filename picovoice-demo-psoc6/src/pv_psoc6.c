@@ -27,10 +27,11 @@ cyhal_clock_t   cpu_clock;
 
 static cy_rslt_t cpu_clock_init(void) {
     cy_rslt_t result;
-    result = cyhal_clock_get(&pll_cpu_clock, &CYHAL_CLOCK_PLL[0]);
+//    result = cyhal_clock_get(&pll_cpu_clock, &CYHAL_CLOCK_PLL[0]);
+    result = cyhal_clock_reserve(&pll_cpu_clock, &CYHAL_CLOCK_PLL[0]);
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_init(&pll_cpu_clock);
+//        result = cyhal_clock_init(&pll_cpu_clock);
     }
 
     if (result == CY_RSLT_SUCCESS) {
@@ -42,17 +43,20 @@ static cy_rslt_t cpu_clock_init(void) {
     }
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_get(&cpu_clock, &CYHAL_CLOCK_HF[0]);
+ //        result = cyhal_clock_get(&cpu_clock, &CYHAL_CLOCK_HF[0]);
+	       result = cyhal_clock_reserve(&cpu_clock, &CYHAL_CLOCK_HF[0]);
     }
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_init(&cpu_clock);
+//        result = cyhal_clock_init(&cpu_clock);
     }
 
     if (result == CY_RSLT_SUCCESS) {
         result = cyhal_clock_set_source(&cpu_clock, &pll_cpu_clock);
     }
 
+    cyhal_clock_free(&pll_cpu_clock);
+    cyhal_clock_free(&cpu_clock);
     return result;
 }
 

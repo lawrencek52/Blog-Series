@@ -34,7 +34,8 @@
 # configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a 
 # valid URL exists in the application, run 'make getlibs' to fetch BSP contents
 # and update or regenerate launch configurations for your IDE.
-TARGET=CY8CPROTO-062-4343W
+TARGET=APP_CY8CPROTO-062-4343W
+MTB_TYPE=COMBINED
 
 # Name of application (used to derive name of final linked file).
 # 
@@ -96,7 +97,7 @@ VERBOSE=
 #
 # English is enabled by default.
 # NOTE: Only one Picovoice component should be enabled at a time.
-COMPONENTS=PICOVOICE_EN
+COMPONENTS=PICOVOICE_EN FREERTOS
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
 DISABLE_COMPONENTS=

@@ -60,10 +60,11 @@ struct {
 
 cy_rslt_t pdm_pcm_clock_init(void) {
     cy_rslt_t result;
-    result = cyhal_clock_get(&pll_clock, &CYHAL_CLOCK_PLL[1]);
+//    result = cyhal_clock_get(&pll_clock, &CYHAL_CLOCK_PLL[1]);
+    result = cyhal_clock_reserve(&pll_clock, &CYHAL_CLOCK_PLL[1]);
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_init(&pll_clock);
+ //    result = cyhal_clock_get(&pll_clock, &CYHAL_CLOCK_PLL[1]);
     }
 
     if (result == CY_RSLT_SUCCESS) {
@@ -75,11 +76,13 @@ cy_rslt_t pdm_pcm_clock_init(void) {
     }
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_get(&audio_clock, &CYHAL_CLOCK_HF[1]);
+//      result = cyhal_clock_get(&audio_clock, &CYHAL_CLOCK_HF[1]);
+        result = cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
+
     }
 
     if (result == CY_RSLT_SUCCESS) {
-        result = cyhal_clock_init(&audio_clock);
+//      result = cyhal_clock_init(&audio_clock);
     }
 
     if (result == CY_RSLT_SUCCESS) {
